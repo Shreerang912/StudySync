@@ -45,8 +45,12 @@ Beyond notes, you can chat...like whatsapp.
 I am currently in 10th grade, last year of school was like a trailer of 10th. even if i was absent for 1 day the teachers would give so many notes (only when im absent 😭, /joke). so i had to ask my friends on whatsapp for notes. my phone's storage was filled with 10gb of images of notes. it was impossible to find any notes when my finals arrived. it was a headache to find notes. so after my exams were over i made a app addressing this specific issue in android studio, but that attempt was terrible. the app kept crashing easily. text was glitching and the ui was like 2008. so i dropped the project midway. then i came to know about flutter flow. i learnt flutter flow and now its my second attempt at making this app. i hope this turns out great. this app would solve my current biggest problem. 
 
 ---
-#NOTE: i havent added email confirmation yet. i think i will turn back to only username nd passowrd, and if i dont, i will add guest login
+
+#NOTE
+i havent added email confirmation yet. i think i will turn back to only username nd passowrd, and if i dont, i will add guest login
+
 ---
+
 ## How to Try It
 
 
