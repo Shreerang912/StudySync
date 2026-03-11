@@ -46,7 +46,7 @@ I am currently in 10th grade, last year of school was like a trailer of 10th. ev
 
 ---
 
-#NOTE
+# NOTE
 i havent added email confirmation yet. i think i will turn back to only username nd passowrd, and if i dont, i will add guest login
 
 ---
