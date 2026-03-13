@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
@@ -14,13 +12,13 @@ import '../notes/note_viewer_screen.dart';
 class ChatScreen extends StatefulWidget {
   final GroupModel group;
   final String currentUid;
-  final String currentusername;
+  final String currentUsername;
 
   const ChatScreen({
     super.key,
     required this.group,
     required this.currentUid,
-    this.currentusername = '',
+    this.currentUsername = '',
   });
 
   @override
@@ -40,7 +38,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _loadSenderName() async {
-    final user = await_db.getUserById(widget.currentUid);
+    final user = await _db.getUserById(widget.currentUid);
     if (mounted) setState(() => _senderName = user?.username ?? '');
   }
 
@@ -77,7 +75,7 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(widget.group.name,
-            style: const TextStyle(fontSize: 17)),
+                style: const TextStyle(fontSize: 17)),
             Text(
               '${widget.group.memberUids.length} members',
               style: const TextStyle(fontSize: 12, color: Colors.white70),
@@ -85,14 +83,16 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         actions: [
+      
           IconButton(
-            icon: const Icon(Icon.folder_outlined),
+            icon: const Icon(Icons.folder_outlined),
             tooltip: 'Group Notes',
-            OnPressed: () => Navigator.push(
+            onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => SendNotesScreen(
-                  group: widget.currentUid,
+                  group: widget.group,
+                  currentUid: widget.currentUid,
                   senderName: _senderName,
                 ),
               ),
@@ -102,11 +102,12 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          Explanded(
+         
+          Expanded(
             child: StreamBuilder<List<MessageModel>>(
-              stream: _db.messageStream(widget.group.id),
+              stream: _db.messagesStream(widget.group.id),
               builder: (context, snapshot) {
-                if (snapshot.connectionstate == ConnectionState.waiting) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 final messages = snapshot.data ?? [];
@@ -118,19 +119,22 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icon(Icons.chat_bubble_outline,
                             size: 64, color: Colors.grey.shade300),
                         const SizedBox(height: 12),
-                        Text('No Messages yet',
-                        style: TextStyle(color:Colors.grey.shade400)),
+                        Text('No messages yet',
+                            style: TextStyle(color: Colors.grey.shade400)),
+                        Text('Say hello or request notes!',
+                            style: TextStyle(color: Colors.grey.shade400)),
                       ],
                     ),
                   );
                 }
 
                 WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+
                 return ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 8),
-                    itemCount: messages.length,
+                      horizontal: 12, vertical: 8),
+                  itemCount: messages.length,
                   itemBuilder: (ctx, i) {
                     final msg = messages[i];
                     final isMe = msg.senderId == widget.currentUid;
@@ -147,11 +151,105 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
+
+         
           _buildInputBar(context),
         ],
       ),
     );
   }
 
-  Widget _bui
+  Widget _buildInputBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+        
+          Tooltip(
+            message: 'Request Notes',
+            child: IconButton(
+              icon: const Icon(Icons.request_page_outlined,
+                  color: Color(0xFF5C6BC0)),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RequestNotesScreen(
+                    group: widget.group,
+                    currentUid: widget.currentUid,
+                    senderName: _senderName,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          
+          Tooltip(
+            message: 'Send Notes',
+            child: IconButton(
+              icon: const Icon(Icons.upload_file_outlined,
+                  color: Color(0xFF5C6BC0)),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SendNotesScreen(
+                    group: widget.group,
+                    currentUid: widget.currentUid,
+                    senderName: _senderName,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+         
+          Expanded(
+            child: TextField(
+              controller: _msgController,
+              maxLines: null,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                hintText: 'Message...',
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onSubmitted: (_) => _sendText(),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          
+          GestureDetector(
+            onTap: _sendText,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: Color(0xFF3F51B5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.send, color: Colors.white, size: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
