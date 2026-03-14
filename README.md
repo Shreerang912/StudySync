@@ -65,7 +65,7 @@ No install needed. Opens on any device  phone, tablet, or PC.
 
 ### Option 2 — Android APK
 
-[![Download APK](https://img.shields.io/badge/Download%20APK-%233DDC84?style=for-the-badge&logo=android&logoColor=white)](https://drive.google.com/uc?id=17gjEOa1eztBJSj9cU-etZ2Ls2VC8-oxq)
+[![Download APK](https://img.shields.io/badge/Download%20APK-%233DDC84?style=for-the-badge&logo=android&logoColor=white)](https://studysync-apk.short.gy/tivrqH)
 
 1. Download the APK file
 2. Open it, Android will ask to allow installation from unknown sources, tap Allow
@@ -75,7 +75,7 @@ No install needed. Opens on any device  phone, tablet, or PC.
 
 ### Option 3 — Windows
 
-[![Download for Windows](https://img.shields.io/badge/Download%20for%20Windows-%230078D4?style=for-the-badge&logo=windows&logoColor=white)](https://drive.google.com/uc?export=download&id=1oXKHDYbeQW_LhaG6s8DrNcN7ZCiVbVaC)
+[![Download for Windows](https://img.shields.io/badge/Download%20for%20Windows-%230078D4?style=for-the-badge&logo=windows&logoColor=white)](https://studysync-apk.short.gy/UhNXnd)
 
 1. Download and run the installer
 2. install it (dw it takes 30mb and like 10 sec to install, just spam next)
