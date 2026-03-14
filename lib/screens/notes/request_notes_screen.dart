@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
+import '../../models/group_model.dart';
 
 class RequestNotesScreen extends StatelessWidget {
-  const RequestNotesScreen({super.key});
+  final GroupModel group;
+  final String currentUid;
+  final String senderName;
+
+  const RequestNotesScreen({
+    super.key,
+    required this.group,
+    required this.currentUid,
+    required this.senderName,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Requst Notes')),
-      body: const Center(child: Text('Coming Soon')),
+      appBar: AppBar(title: const Text('Request Notes')),
+      body: const Center(child: Text('Coming soon')),
     );
   }
 }

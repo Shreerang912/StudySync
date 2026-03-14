@@ -83,7 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         actions: [
-      
+          // Notes Manager shortcut for this group
           IconButton(
             icon: const Icon(Icons.folder_outlined),
             tooltip: 'Group Notes',
@@ -102,7 +102,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-         
+          // Message list
           Expanded(
             child: StreamBuilder<List<MessageModel>>(
               stream: _db.messagesStream(widget.group.id),
@@ -152,7 +152,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
 
-         
+          // Input bar
           _buildInputBar(context),
         ],
       ),
@@ -174,7 +174,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       child: Row(
         children: [
-        
+          // Request Notes button
           Tooltip(
             message: 'Request Notes',
             child: IconButton(
@@ -193,7 +193,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
 
-          
+          // Send Notes button
           Tooltip(
             message: 'Send Notes',
             child: IconButton(
@@ -212,7 +212,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
 
-         
+          // Text input
           Expanded(
             child: TextField(
               controller: _msgController,
@@ -235,7 +235,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
           const SizedBox(width: 8),
 
-          
+          // Send button
           GestureDetector(
             onTap: _sendText,
             child: Container(
@@ -248,6 +248,279 @@ class _ChatScreenState extends State<ChatScreen> {
               child: const Icon(Icons.send, color: Colors.white, size: 20),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MessageBubble extends StatelessWidget {
+  final MessageModel message;
+  final bool isMe;
+  final FirestoreService db;
+  final String currentUid;
+  final String senderName;
+  final GroupModel group;
+
+  const _MessageBubble({
+    required this.message,
+    required this.isMe,
+    required this.db,
+    required this.currentUid,
+    required this.senderName,
+    required this.group,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (message.type == MessageType.noteRequest) {
+      return _NoteRequestBubble(
+        message: message,
+        isMe: isMe,
+        db: db,
+        currentUid: currentUid,
+        senderName: senderName,
+        group: group,
+      );
+    }
+
+    if (message.type == MessageType.note) {
+      return _NoteBubble(
+        message: message,
+        isMe: isMe,
+        db: db,
+      );
+    }
+
+    // Regular text message
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.72,
+        ),
+        decoration: BoxDecoration(
+          color: isMe ? const Color(0xFF3F51B5) : Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(isMe ? 18 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 18),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            if (!isMe)
+              Text(
+                message.senderName,
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF5C6BC0)),
+              ),
+            Text(
+              message.text ?? '',
+              style: TextStyle(
+                  color: isMe ? Colors.white : Colors.black87,
+                  fontSize: 15),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              DateFormat('h:mm a').format(message.timestamp),
+              style: TextStyle(
+                  fontSize: 10,
+                  color: isMe ? Colors.white60 : Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NoteRequestBubble extends StatelessWidget {
+  final MessageModel message;
+  final bool isMe;
+  final FirestoreService db;
+  final String currentUid;
+  final String senderName;
+  final GroupModel group;
+
+  const _NoteRequestBubble({
+    required this.message,
+    required this.isMe,
+    required this.db,
+    required this.currentUid,
+    required this.senderName,
+    required this.group,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3E0),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFB74D), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.request_page, color: Color(0xFFF57C00), size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${message.senderName} is requesting notes',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Color(0xFFF57C00)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _InfoRow('Subject', message.subject ?? '-'),
+          _InfoRow('Topic', message.topic ?? '-'),
+          const SizedBox(height: 10),
+          if (!isMe)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SendNotesScreen(
+                      group: group,
+                      currentUid: currentUid,
+                      senderName: senderName,
+                      prefillSubject: message.subject,
+                      prefillTopic: message.topic,
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.upload_file, size: 18),
+                label: const Text('Send Notes'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3F51B5),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          Text(
+            DateFormat('h:mm a').format(message.timestamp),
+            style: const TextStyle(fontSize: 10, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NoteBubble extends StatelessWidget {
+  final MessageModel message;
+  final bool isMe;
+  final FirestoreService db;
+
+  const _NoteBubble({
+    required this.message,
+    required this.isMe,
+    required this.db,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        if (message.noteId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => NoteViewerScreen(noteId: message.noteId!),
+            ),
+          );
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8EAF6),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF5C6BC0), width: 1.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.note_alt, color: Color(0xFF3F51B5), size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${message.senderName} shared notes',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3F51B5)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _InfoRow('Subject', message.subject ?? '-'),
+            _InfoRow('Topic', message.topic ?? '-'),
+            const SizedBox(height: 6),
+            const Row(
+              children: [
+                Icon(Icons.touch_app, size: 14, color: Colors.grey),
+                SizedBox(width: 4),
+                Text('Tap to view notes',
+                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              DateFormat('h:mm a').format(message.timestamp),
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _InfoRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Text('$label: ',
+              style: const TextStyle(
+                  fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(value,
+              style: const TextStyle(fontSize: 13, color: Colors.black87)),
         ],
       ),
     );
