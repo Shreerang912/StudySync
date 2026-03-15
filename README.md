@@ -119,8 +119,8 @@ No install needed. Opens on any device  phone, tablet, or PC.
 | v0.3 | Groups + Create Group | Done |
 | v0.4 | Friends Screen | Done |
 | v0.5 | Chat Screen | Done |
-| v0.6 | Request Notes | In Progress |
-| v0.7 | Send Notes | Upcoming |
+| v0.6 | Request Notes | Done |
+| v0.7 | Send Notes | In Progress |
 | v0.8 | Notes Manager | Upcoming |
 | v0.9 | Note Viewer | Upcoming |
 
