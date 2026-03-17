@@ -84,14 +84,103 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
       _selectedImages.insert(newIndex, item);
     });
   }
+  Future<void> _sendNotes() async {
+    if (_subjectController.text.trim().isEmpty ||
+        _topicController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter Subject and Topic')),
+      );
+      return;
+    }
+    if (_selectedImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add at least one image')),
+      );
+      return;
+    }
+    setState(() {
+      _isSending = true;
+      _uploadStatus = 'Uploading images...';
+    });
+    try {
+      final List<String> imageUrls = [];
+      for (int i = 0; i < _selectedImages.length; i++) {
+        setState(() => _uploadStatus =
+          'Uploading image ${i + 1} of ${_selectedImages.length}...');
+        final url = await CloudinaryService.uploadImage(_selectedImages[i]);
+        if (url != null) imageUrls.add(url);
+      }
+      if (imageUrls.isEmpty) {
+        throw Exception('Failed to upload images');
+      }
+      setState(() => _uploadStatus = 'Saving notes...');
+      final noteId = await _db.saveNote(
+        senderId: widget.currentUid,
+        senderName: widget.senderName,
+        groupId: widget.group.id,
+        subject: _subjectController.text.trim(),
+        topic: _topicController.text.trim(),
+        imageUrls: imageUrls,
+        description: _descController.text.trim().isEmpty
+            ? null
+            : _descController.text.trim(),
+      );
+      await _db.sendMessage(
+        groupId: widget.group.id,
+        senderId: widget.currentUid,
+        senderName: widget.senderName,
+        text: 'Shared Notes: ${_subjectController.text.trim()} - ${_topicController.text.trim()} (${imageUrls.length} pages)',
+        type: MessageType.note,
+        noteId: noteId,
+        subject: _subjectController.text.trim(),
+        topic: _topicController.text.trim(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Notes sent successfuly'),
+            backgroundColor: Colors.grey,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+    setState(() => _isSending = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Send Notes'),
+        actions: [
+          TextButton(
+            onPressed: _isSending ? null : _sendNotes,
+            child: const Text('Send',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16)),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
+      body: _isSending
+      ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(color: Color(0xFF3F51B5)),
+            const SizedBox(height: 16),
+            Text(_uploadStatus, style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      ) : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,6 +278,89 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            if (_selectedImages.isNotEmpty) ...[
+              const Text(
+                'Long press and drag to reorder pages',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount:_selectedImages.length,
+                onReorder: _reorderImages,
+                itemBuilder: (context, index) {
+                  return Container(
+                    key: ValueKey(_selectedImages[index].path),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 80,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF3F51B5),
+                            borderRadius: BorderRadius.horizontal(
+                              left: Radius.circular(11)),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.drag_handle,
+                              color: Colors.white, size: 18),
+                              Text('${index + 1}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16)),
+                              Text('of ${_selectedImages.length}',
+                                  style: const TextStyle(
+                                    color: Colors.white60, fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                        Image.file(_selectedImages[index],
+                            width: 80, height: 80, fit: BoxFit.cover),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text('Page ${index + 1}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.red),
+                              onPressed: () => _removeImage(index),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isSending ? null : _sendNotes,
+                icon: const Icon(Icons.send),
+                label: const Text('Send Notes'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3F51B5),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                  textStyle: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         ),
