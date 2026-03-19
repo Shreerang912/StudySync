@@ -1,4 +1,4 @@
-enum MessageType { text, noteRequest, note, image }
+enum MessageType { text, noteRequest, note, noteUploading, image }
 
 class MessageModel {
   final String id;

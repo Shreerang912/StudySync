@@ -55,7 +55,7 @@ class _RequestNotesScreenState extends State<RequestNotesScreen> {
         senderId: widget.currentUid,
         senderName: widget.senderName,
         text:
-            '📚 ${widget.senderName} is requesting notes for ${_subjectController.text.trim()} - ${_topicController.text.trim()}',
+            ' ${widget.senderName} is requesting notes for ${_subjectController.text.trim()} - ${_topicController.text.trim()}',
         type: MessageType.noteRequest,
         subject: _subjectController.text.trim(),
         topic: _topicController.text.trim(),

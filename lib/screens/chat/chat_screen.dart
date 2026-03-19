@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
@@ -291,6 +292,9 @@ class _MessageBubble extends StatelessWidget {
         db: db,
       );
     }
+    if (message.type == MessageType.noteUploading) {
+      return _UploadingNoteBubble(message: message);
+    }
 
     // Regular text message
     return Align(
@@ -523,6 +527,103 @@ class _InfoRow extends StatelessWidget {
               style: const TextStyle(fontSize: 13, color: Colors.black87)),
         ],
       ),
+    );
+  }
+}
+class _UploadingNoteBubble extends StatefulWidget {
+  final MessageModel message;
+  const _UploadingNoteBubble({required this.message});
+
+  @override
+  State<_UploadingNoteBubble> createState() => _UploadingNoteBubbleState();
+}
+class _UploadingNoteBubbleState extends State<_UploadingNoteBubble>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder:  (context, child) {
+        return Opacity(
+          opacity: _animation.value,
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8EAF6),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF5C6BC0), width: 1.5),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.note_alt,
+                        color: Color(0xFF3F51B5), size: 22),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${widget.message.senderName} is uploading notes...',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF3F51B5)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRect(
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _InfoRow('Subject', widget.message.subject ?? 'Loading...'),
+                        _InfoRow('Topic', widget.message.topic ?? 'Loading...'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Row(
+                  children: [
+                    SizedBox(width: 12, height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF5C6BC0),
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Text('Uploading...',
+                                style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

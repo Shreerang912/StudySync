@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -5,7 +6,46 @@ import '../../models/group_model.dart';
 import '../../models/message_model.dart';
 import '../../services/cloudinary_service.dart';
 import '../../services/firestore_service.dart';
+Future<void> _backgroundUpload({
+  required String placeholderMsgId,
+  required List<File> images,
+  required String currentUid,
+  required String senderName,
+  required String groupId,
+  required String subject,
+  required String topic,
+  required String? description,
+}) async {
+  try {
+    final db = FirestoreService();
+    final results = await Future.wait(
+      images.map((img) => CloudinaryService.uploadImage(img)),
+    );
+    final List<String> imageUrls = results.whereType<String>().toList();
+    if (imageUrls.isEmpty) return;
 
+    final noteId = await db.saveNote(
+      senderId: currentUid,
+      senderName: senderName,
+      groupId: groupId,
+      subject: subject,
+      topic: topic,
+      imageUrls: imageUrls,
+      description: description,
+    );
+
+    await db.updateMessage(
+      messageId: placeholderMsgId,
+      data: {
+        'type': 'note',
+        'note_id': noteId,
+        'text': 'Shared notes: $subject — $topic (${imageUrls.length} pages)',
+      },
+    );
+  } catch (e) {
+    debugPrint('Background upload error: $e');
+  }
+}
 class SendNotesScreen extends StatefulWidget {
   final GroupModel group;
   final String currentUid;
@@ -98,61 +138,39 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
       );
       return;
     }
-    setState(() {
-      _isSending = true;
-      _uploadStatus = 'Uploading images...';
-    });
-    try {
-      final List<String> imageUrls = [];
-      for (int i = 0; i < _selectedImages.length; i++) {
-        setState(() => _uploadStatus =
-          'Uploading image ${i + 1} of ${_selectedImages.length}...');
-        final url = await CloudinaryService.uploadImage(_selectedImages[i]);
-        if (url != null) imageUrls.add(url);
-      }
-      if (imageUrls.isEmpty) {
-        throw Exception('Failed to upload images');
-      }
-      setState(() => _uploadStatus = 'Saving notes...');
-      final noteId = await _db.saveNote(
-        senderId: widget.currentUid,
-        senderName: widget.senderName,
-        groupId: widget.group.id,
-        subject: _subjectController.text.trim(),
-        topic: _topicController.text.trim(),
-        imageUrls: imageUrls,
-        description: _descController.text.trim().isEmpty
-            ? null
-            : _descController.text.trim(),
-      );
-      await _db.sendMessage(
-        groupId: widget.group.id,
-        senderId: widget.currentUid,
-        senderName: widget.senderName,
-        text: 'Shared Notes: ${_subjectController.text.trim()} - ${_topicController.text.trim()} (${imageUrls.length} pages)',
-        type: MessageType.note,
-        noteId: noteId,
-        subject: _subjectController.text.trim(),
-        topic: _topicController.text.trim(),
-      );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Notes sent successfuly'),
-            backgroundColor: Colors.grey,
-          ),
-        );
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
-    }
-    setState(() => _isSending = false);
+    
+    final subject = _subjectController.text.trim();
+    final topic = _topicController.text.trim();
+    final description = _descController.text.trim().isEmpty
+                    ? null
+                    : _descController.text.trim();
+    final imagesToUpload = List<File>.from(_selectedImages);
+    final db = FirestoreService();
+
+    final placeholderMsgId = await db.sendMessage(
+      groupId: widget.group.id,
+      senderId: widget.currentUid,
+      senderName: widget.senderName,
+      text: 'Uploading notes: $subject - $topic',
+      type: MessageType.noteUploading,
+      subject: subject,
+      topic: topic,
+    );
+    if(mounted) Navigator.pop(context);
+
+
+    _backgroundUpload(
+      placeholderMsgId: placeholderMsgId,
+      images: imagesToUpload,
+      currentUid: widget.currentUid,
+      senderName: widget.senderName,
+      groupId: widget.group.id,
+      subject: subject,
+      topic: topic,
+      description: description,
+    );
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -326,7 +344,7 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
                           ),
                         ),
                         Image.file(_selectedImages[index],
-                            width: 80, height: 80, fit: BoxFit.cover),
+                            width: 80, height: 80, fit: BoxFit.cover, cacheWidth: 160),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text('Page ${index + 1}',

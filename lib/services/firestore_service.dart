@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
+import 'dart:async';
 import '../models/message_model.dart';
 import '../models/note_model.dart';
 import '../models/group_model.dart';
@@ -123,7 +124,7 @@ class FirestoreService {
   }
 
 
-  Future<void> sendMessage({
+  Future<String> sendMessage({
     required String groupId,
     required String senderId,
     required String senderName,
@@ -133,7 +134,7 @@ class FirestoreService {
     String? subject,
     String? topic,
   }) async {
-    await _sb.from('messages').insert({
+    final result = await _sb.from('messages').insert({
       'group_id': groupId,
       'sender_id': senderId,
       'sender_name': senderName,
@@ -143,22 +144,63 @@ class FirestoreService {
       'subject': subject,
       'topic': topic,
       'created_at': DateTime.now().toIso8601String(),
-    });
+    }).select().single();
 
     await _sb.from('groups').update({
       'last_message': text,
       'last_message_time': DateTime.now().toIso8601String(),
     }).eq('id', groupId);
+    return result['id'] as String;
   }
 
-  Stream<List<MessageModel>> messagesStream(String groupId) {
-    return _sb
-        .from('messages')
-        .stream(primaryKey: ['id'])
-        .eq('group_id', groupId)
-        .order('created_at', ascending: true)
-        .map((rows) => rows.map((r) => MessageModel.fromMap(r)).toList());
-  }
+Stream<List<MessageModel>> messagesStream(String groupId) {
+  final controller = StreamController<List<MessageModel>>();
+  List<MessageModel> _current = [];
+
+  // Initial fetch
+  _sb
+      .from('messages')
+      .select()
+      .eq('group_id', groupId)
+      .order('created_at', ascending: true)
+      .then((data) {
+    _current = (data as List).map((r) => MessageModel.fromMap(r)).toList();
+    controller.add(_current);
+  });
+
+  // Listen for all changes
+  final channel = _sb
+      .channel('messages:$groupId')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'messages',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'group_id',
+          value: groupId,
+        ),
+        callback: (payload) async {
+          // Re-fetch everything on any change
+          final data = await _sb
+              .from('messages')
+              .select()
+              .eq('group_id', groupId)
+              .order('created_at', ascending: true);
+          _current =
+              (data as List).map((r) => MessageModel.fromMap(r)).toList();
+          controller.add(_current);
+        },
+      )
+      .subscribe();
+
+  controller.onCancel = () {
+    _sb.removeChannel(channel);
+    controller.close();
+  };
+
+  return controller.stream;
+}
 
 
   Future<String> saveNote({
@@ -236,5 +278,11 @@ class FirestoreService {
         .toList();
     subjects.sort();
     return subjects;
+  }
+  Future<void> updateMessage({
+    required String messageId,
+    required Map<String, dynamic> data,
+  }) async {
+    await _sb.from('messages').update(data).eq('id', messageId);
   }
 }
