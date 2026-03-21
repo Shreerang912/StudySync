@@ -18,24 +18,30 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
   NoteModel? _note;
   bool _isLoading = true;
   int _currentPage = 0;
+  final _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
     _loadNote();
   }
-    Future<void> _loadNote() async {
-      final note = await _db.getNoteById(widget.noteId);
-      if (mounted) {
-        setState(() {
-          _note = note;
-          _isLoading = false;
-        });
-        if (note != null) {
-          debugPrint('First URL: ${note.imageUrls.isNotEmpty ? note.imageUrls[0] : "EMPTY"}');
-        }
-      }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadNote() async {
+    final note = await _db.getNoteById(widget.noteId);
+    if (mounted) {
+      setState(() {
+        _note = note;
+        _isLoading = false;
+      });
     }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,45 +52,50 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
         ),
       ),
       body: _isLoading
-      ? const Center(
-        child: CircularProgressIndicator(color: Color(0xFF3F51B5)),
-      )
-      :  _note == null
-        ? const Center(child: Text('Note not found'))
-       : Stack(
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF3F51B5)),
+            )
+          : _note == null
+              ? const Center(child: Text('Note not found'))
+              : Stack(
                   children: [
                 
                     PageView.builder(
+                      controller: _pageController,
                       itemCount: _note!.imageUrls.length,
                       onPageChanged: (i) =>
                           setState(() => _currentPage = i),
                       itemBuilder: (context, index) {
-                    return InteractiveViewer(
-                      minScale: 0.5,
-                      maxScale: 4.0,
-                      child: CachedNetworkImage(
-                                imageUrl: _note!.imageUrls[index],
-                                fit: BoxFit.contain,
-                                width: double.infinity,
-                                height: double.infinity,
-                                placeholder: (context, url) => const Center(
-                                  child: CircularProgressIndicator(color: Color(0xFF3F51B5)),
-                                ),
-                                errorWidget: (context, url, error) => const Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.broken_image_outlined, size: 64, color: Colors.grey),
-                                      SizedBox(height: 8),
-                                      Text('Could not load image',
-                                          style: TextStyle(color: Colors.grey)),
-                                    ],
-                                  ),
-                                ),
+                        return InteractiveViewer(
+                          minScale: 0.5,
+                          maxScale: 4.0,
+                          child: CachedNetworkImage(
+                            imageUrl: _note!.imageUrls[index],
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                            height: double.infinity,
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(
+                                  color: Color(0xFF3F51B5)),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.broken_image_outlined,
+                                      size: 64, color: Colors.grey),
+                                  SizedBox(height: 8),
+                                  Text('Could not load image',
+                                      style:
+                                          TextStyle(color: Colors.grey)),
+                                ],
                               ),
-                    );
-                  },
-                ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
 
                     Positioned(
                       top: 12,
@@ -97,7 +108,8 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3F51B5).withOpacity(0.85),
+                              color: const Color(0xFF3F51B5)
+                                  .withOpacity(0.85),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -129,7 +141,7 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
                       ),
                     ),
 
-                
+           
                     Positioned(
                       top: 12,
                       right: 12,
@@ -152,6 +164,66 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
 
                
                     Positioned(
+                      bottom: 70,
+                      left: 0,
+                      right: 0,
+                      child: SizedBox(
+                        height: 64,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12),
+                          itemCount: _note!.imageUrls.length,
+                          itemBuilder: (context, index) {
+                            final isSelected = index == _currentPage;
+                            return GestureDetector(
+                              onTap: () {
+                                _pageController.animateToPage(
+                                  index,
+                                  duration:
+                                      const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xFF3F51B5)
+                                        : Colors.white54,
+                                    width: isSelected ? 2.5 : 1,
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(5),
+                                  child: CachedNetworkImage(
+                                    imageUrl: _note!.imageUrls[index],
+                                    width: 48,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, __, ___) =>
+                                        Container(
+                                      width: 48,
+                                      height: 60,
+                                      color: Colors.grey.shade800,
+                                      child: const Icon(
+                                          Icons.image_outlined,
+                                          color: Colors.white54,
+                                          size: 20),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                  
+                    Positioned(
                       bottom: 16,
                       left: 12,
                       right: 12,
@@ -172,7 +244,8 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
                                 const SizedBox(width: 4),
                                 Text(_note!.senderName,
                                     style: const TextStyle(
-                                        color: Colors.white70, fontSize: 11)),
+                                        color: Colors.white70,
+                                        fontSize: 11)),
                                 const SizedBox(width: 12),
                                 const Icon(Icons.calendar_today_outlined,
                                     size: 13, color: Colors.white70),
@@ -181,7 +254,8 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
                                   DateFormat('MMM d, yyyy')
                                       .format(_note!.timestamp),
                                   style: const TextStyle(
-                                      color: Colors.white70, fontSize: 11),
+                                      color: Colors.white70,
+                                      fontSize: 11),
                                 ),
                               ],
                             ),
