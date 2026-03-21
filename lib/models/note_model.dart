@@ -30,7 +30,10 @@ factory NoteModel.fromMap(Map<String, dynamic> map) {
       groupId: map['group_id'] ?? '',
       subject: map['subject'] ?? '',
       topic: map['topic'] ?? '',
-      imageUrls: List<String>.from(map['image_urls'] ?? []),
+      imageUrls: (map['image_urls'] as List? ?? [])
+      .map((e) => e.toString().replaceAll('"', '').trim())
+      .where((e) => e.isNotEmpty && e.startsWith('http'))
+      .toList(),
       description: map['description'],
       timestamp: _parseDate(map['created_at']),
   );

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/note_model.dart';
@@ -23,17 +24,18 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
     super.initState();
     _loadNote();
   }
-
-  Future<void> _loadNote() async {
-    final note = await _db.getNoteById(widget.noteId);
-    if (mounted) {
-      setState(() {
-        _note = note;
-        _isLoading = false;
-      });
+    Future<void> _loadNote() async {
+      final note = await _db.getNoteById(widget.noteId);
+      if (mounted) {
+        setState(() {
+          _note = note;
+          _isLoading = false;
+        });
+        if (note != null) {
+          debugPrint('First URL: ${note.imageUrls.isNotEmpty ? note.imageUrls[0] : "EMPTY"}');
+        }
+      }
     }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,35 +59,32 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
                       onPageChanged: (i) =>
                           setState(() => _currentPage = i),
                       itemBuilder: (context, index) {
-                        return Image.network(
-                          _note!.imageUrls[index],
-                          fit: BoxFit.contain,
-                          width: double.infinity,
-                          height: double.infinity,
-                          loadingBuilder: (context, child, progress) {
-                            if (progress == null) return child;
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                  color: Color(0xFF3F51B5)),
-                            );
-                          },
-                          errorBuilder: (context, error, stack) {
-                            return const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.broken_image_outlined,
-                                      size: 64, color: Colors.grey),
-                                  SizedBox(height: 8),
-                                  Text('Could not load image',
-                                      style: TextStyle(color: Colors.grey)),
-                                ],
+                    return InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: CachedNetworkImage(
+                                imageUrl: _note!.imageUrls[index],
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                                height: double.infinity,
+                                placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(color: Color(0xFF3F51B5)),
+                                ),
+                                errorWidget: (context, url, error) => const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.broken_image_outlined, size: 64, color: Colors.grey),
+                                      SizedBox(height: 8),
+                                      Text('Could not load image',
+                                          style: TextStyle(color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            );
-                          },
-                        );
-                      },
-                    ),
+                    );
+                  },
+                ),
 
                     Positioned(
                       top: 12,
