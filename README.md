@@ -121,8 +121,8 @@ No install needed. Opens on any device  phone, tablet, or PC.
 | v0.5 | Chat Screen | Done |
 | v0.6 | Request Notes | Done |
 | v0.7 | Send Notes | Done |
-| v0.8 | Notes Viewer | In Progress |
-| v0.9 | Note Manager | Upcoming |
+| v0.8 | Notes Viewer | Done |
+| v0.9 | Note Manager | In Progress |
 
 ---
 

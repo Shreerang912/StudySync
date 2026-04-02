@@ -19,6 +19,7 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
   bool _isLoading = true;
   int _currentPage = 0;
   final _pageController = PageController();
+  bool _showUI = true;
 
   @override
   void initState() {
@@ -60,7 +61,9 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
               : Stack(
                   children: [
                 
-                    PageView.builder(
+                    GestureDetector(
+                      onTap: () => setState(() => _showUI = !_showUI),
+                      child: PageView.builder(
                       controller: _pageController,
                       itemCount: _note!.imageUrls.length,
                       onPageChanged: (i) =>
@@ -95,9 +98,13 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
                           ),
                         );
                       },
+                     ),   
                     ),
 
-                    Positioned(
+                    AnimatedOpacity(
+                      opacity: _showUI ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 150),
+                      child: Positioned(
                       top: 12,
                       left: 12,
                       right: 60,
@@ -139,6 +146,7 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
                           ),
                         ],
                       ),
+                     )
                     ),
 
            
