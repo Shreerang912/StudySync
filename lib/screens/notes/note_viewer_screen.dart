@@ -20,6 +20,7 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
   int _currentPage = 0;
   final _pageController = PageController();
   bool _showUI = true;
+  final _transformController = TransformationController();
 
   @override
   void initState() {
@@ -30,6 +31,7 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _transformController.dispose();
     super.dispose();
   }
 
@@ -60,217 +62,204 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
               ? const Center(child: Text('Note not found'))
               : Stack(
                   children: [
-                
                     GestureDetector(
                       onTap: () => setState(() => _showUI = !_showUI),
                       child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: _note!.imageUrls.length,
-                      onPageChanged: (i) =>
-                          setState(() => _currentPage = i),
-                      itemBuilder: (context, index) {
-                        return InteractiveViewer(
-                          minScale: 0.5,
-                          maxScale: 4.0,
-                          child: CachedNetworkImage(
-                            imageUrl: _note!.imageUrls[index],
-                            fit: BoxFit.contain,
-                            width: double.infinity,
-                            height: double.infinity,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(
-                                  color: Color(0xFF3F51B5)),
-                            ),
-                            errorWidget: (context, url, error) =>
-                                const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.broken_image_outlined,
-                                      size: 64, color: Colors.grey),
-                                  SizedBox(height: 8),
-                                  Text('Could not load image',
-                                      style:
-                                          TextStyle(color: Colors.grey)),
-                                ],
+                        controller: _pageController,
+                        itemCount: _note!.imageUrls.length,
+                        onPageChanged: (i) =>
+                            setState(() => _currentPage = i),
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onDoubleTap: () {
+                              setState(() {
+                                _transformController.value =
+                                    Matrix4.identity();
+                              });
+                            },
+                            child: InteractiveViewer(
+                              transformationController: _transformController,
+                              minScale: 0.5,
+                              maxScale: 4.0,
+                              child: CachedNetworkImage(
+                                imageUrl: _note!.imageUrls[index],
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                                height: double.infinity,
+                                placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(
+                                      color: Color(0xFF3F51B5)),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Center(
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.broken_image_outlined,
+                                          size: 64, color: Colors.grey),
+                                      SizedBox(height: 8),
+                                      Text('Could not load image',
+                                          style: TextStyle(
+                                              color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                     ),   
+                          );
+                        },
+                      ),
                     ),
 
-                    AnimatedOpacity(
-                      opacity: _showUI ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 150),
-                      child: Positioned(
+                    Positioned(
                       top: 12,
                       left: 12,
                       right: 60,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3F51B5)
-                                  .withOpacity(0.85),
-                              borderRadius: BorderRadius.circular(20),
+                      child: AnimatedOpacity(
+                        opacity: _showUI ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 250),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3F51B5)
+                                    .withOpacity(0.85),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _note!.subject,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold),
+                              ),
                             ),
-                            child: Text(
-                              _note!.subject,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _note!.topic,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              _note!.topic,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                     )
                     ),
 
-           
                     Positioned(
                       top: 12,
                       right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '${_currentPage + 1} / ${_note!.imageUrls.length}',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500),
+                      child: AnimatedOpacity(
+                        opacity: _showUI ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 250),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${_currentPage + 1} / ${_note!.imageUrls.length}',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500),
+                          ),
                         ),
                       ),
                     ),
 
-               
                     Positioned(
                       bottom: 70,
                       left: 0,
                       right: 0,
-                      child: SizedBox(
-                        height: 64,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12),
-                          itemCount: _note!.imageUrls.length,
-                          itemBuilder: (context, index) {
-                            final isSelected = index == _currentPage;
-                            return GestureDetector(
-                              onTap: () {
-                                _pageController.animateToPage(
-                                  index,
-                                  duration:
-                                      const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                              child: Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? const Color(0xFF3F51B5)
-                                        : Colors.white54,
-                                    width: isSelected ? 2.5 : 1,
+                      child: AnimatedOpacity(
+                        opacity: _showUI ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 250),
+                        child: SizedBox(
+                          height: 64,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12),
+                            itemCount: _note!.imageUrls.length,
+                            itemBuilder: (context, index) {
+                              final isSelected = index == _currentPage;
+                              return GestureDetector(
+                                onTap: () {
+                                  _pageController.animateToPage(
+                                    index,
+                                    duration: const Duration(
+                                        milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
+                                child: Container(
+                                  margin:
+                                      const EdgeInsets.only(right: 8),
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? const Color(0xFF3F51B5)
+                                          : Colors.white54,
+                                      width: isSelected ? 2.5 : 1,
+                                    ),
                                   ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: CachedNetworkImage(
-                                    imageUrl: _note!.imageUrls[index],
-                                    width: 48,
-                                    height: 60,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (_, __, ___) =>
-                                        Container(
+                                  child: ClipRRect(
+                                    borderRadius:
+                                        BorderRadius.circular(5),
+                                    child: CachedNetworkImage(
+                                      imageUrl: _note!.imageUrls[index],
                                       width: 48,
                                       height: 60,
-                                      color: Colors.grey.shade800,
-                                      child: const Icon(
-                                          Icons.image_outlined,
-                                          color: Colors.white54,
-                                          size: 20),
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, __, ___) =>
+                                          Container(
+                                        width: 48,
+                                        height: 60,
+                                        color: Colors.grey.shade800,
+                                        child: const Icon(
+                                            Icons.image_outlined,
+                                            color: Colors.white54,
+                                            size: 20),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
 
-                  
                     Positioned(
                       bottom: 16,
                       left: 12,
                       right: 12,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.person_outline,
-                                    size: 13, color: Colors.white70),
-                                const SizedBox(width: 4),
-                                Text(_note!.senderName,
-                                    style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 11)),
-                                const SizedBox(width: 12),
-                                const Icon(Icons.calendar_today_outlined,
-                                    size: 13, color: Colors.white70),
-                                const SizedBox(width: 4),
-                                Text(
-                                  DateFormat('MMM d, yyyy')
-                                      .format(_note!.timestamp),
-                                  style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (_note!.description != null &&
-                              _note!.description!.isNotEmpty) ...[
-                            const SizedBox(height: 6),
+                      child: AnimatedOpacity(
+                        opacity: _showUI ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 250),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
@@ -278,16 +267,53 @@ class _NoteViewerScreenState extends State<NoteViewerScreen> {
                                 color: Colors.black54,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Text(
-                                _note!.description!,
-                                style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 11,
-                                    fontStyle: FontStyle.italic),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.person_outline,
+                                      size: 13, color: Colors.white70),
+                                  const SizedBox(width: 4),
+                                  Text(_note!.senderName,
+                                      style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 11)),
+                                  const SizedBox(width: 12),
+                                  const Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 13,
+                                      color: Colors.white70),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    DateFormat('MMM d, yyyy')
+                                        .format(_note!.timestamp),
+                                    style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 11),
+                                  ),
+                                ],
                               ),
                             ),
+                            if (_note!.description != null &&
+                                _note!.description!.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius:
+                                      BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  _note!.description!,
+                                  style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic),
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
                   ],
