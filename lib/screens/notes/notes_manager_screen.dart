@@ -19,6 +19,8 @@ class _NotesManagerScreenState extends State<NotesManagerScreen> {
   final _db = FirestoreService();
   List<GroupModel> _myGroups = [];
   List<NoteModel> _allNotes = [];
+  List<String> _subjects = [];
+  String? _selectedSubject;
   bool _isLoading = true;
 
   @override
@@ -40,11 +42,16 @@ class _NotesManagerScreenState extends State<NotesManagerScreen> {
   Future<void> _loadNotes() async {
     setState(() => _isLoading = true);
     final groupIds = _myGroups.map((g) => g.id).toList();
-    final notes = await _db.fetchNotes(groupIds: groupIds);
+    final notes = await _db.fetchNotes(
+      groupIds: groupIds,
+      subject: _selectedSubject,
+    );
+    final subjects = await _db.getSubjectsForGroups(groupIds);
 
     if (mounted) {
       setState(() {
         _allNotes = notes;
+        _subjects = subjects;
         _isLoading = false;
       });
     }
@@ -61,45 +68,137 @@ class _NotesManagerScreenState extends State<NotesManagerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _allNotes.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.folder_open,
-                          size: 80, color: Colors.grey.shade300),
-                      const SizedBox(height: 16),
-                      Text('No notes yet',
-                          style: TextStyle(
-                              fontSize: 18, color: Colors.grey.shade500)),
-                      const SizedBox(height: 8),
-                      Text('Notes shared in your groups will appear here',
-                          style: TextStyle(color: Colors.grey.shade400)),
-                      const SizedBox(height: 16),
-                      TextButton.icon(
-                        onPressed: _loadNotes,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Refresh'),
-                      ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadNotes,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: _groupNotesBySubject().keys.length,
-                    itemBuilder: (ctx, i) {
-                      final subject =
-                          _groupNotesBySubject().keys.toList()[i];
-                      final notes = _groupNotesBySubject()[subject]!;
-                      return _SubjectSection(
-                          subject: subject, notes: notes);
+      body: Column(
+        children: [
+          Container(
+            color: const Color(0xFF5C6BC0),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            child: SizedBox(
+              height: 38,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _FilterChip(
+                    label: 'All',
+                    selected: _selectedSubject == null,
+                    onTap: () {
+                      setState(() => _selectedSubject = null);
+                      _loadNotes();
                     },
                   ),
-                ),
+                  ..._subjects.map(
+                    (s) => _FilterChip(
+                      label: s,
+                      selected: _selectedSubject == s,
+                      onTap: () {
+                        setState(() => _selectedSubject = s);
+                        _loadNotes();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _allNotes.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.folder_open,
+                                size: 80, color: Colors.grey.shade300),
+                            const SizedBox(height: 16),
+                            Text(
+                              _selectedSubject != null
+                                  ? 'No notes for this subject'
+                                  : 'No notes yet',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey.shade500),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Notes shared in your groups will appear here',
+                              style:
+                                  TextStyle(color: Colors.grey.shade400),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: _loadNotes,
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Refresh'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadNotes,
+                        child: _selectedSubject != null
+                            ? ListView.builder(
+                                padding: const EdgeInsets.all(12),
+                                itemCount: _allNotes.length,
+                                itemBuilder: (ctx, i) =>
+                                    _NoteCard(note: _allNotes[i]),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.all(12),
+                                itemCount:
+                                    _groupNotesBySubject().keys.length,
+                                itemBuilder: (ctx, i) {
+                                  final subject = _groupNotesBySubject()
+                                      .keys
+                                      .toList()[i];
+                                  final notes =
+                                      _groupNotesBySubject()[subject]!;
+                                  return _SubjectSection(
+                                      subject: subject, notes: notes);
+                                },
+                              ),
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.white24,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? const Color(0xFF3F51B5) : Colors.white,
+            fontWeight:
+                selected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -176,6 +275,7 @@ class _SubjectSectionState extends State<_SubjectSection> {
     );
   }
 }
+
 class _NoteCard extends StatelessWidget {
   final NoteModel note;
   const _NoteCard({required this.note});
@@ -218,8 +318,7 @@ class _NoteCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(
                     color: Colors.grey.shade200,
-                    child:
-                        const Icon(Icons.image, color: Colors.grey),
+                    child: const Icon(Icons.image, color: Colors.grey),
                   ),
                   errorWidget: (_, __, ___) => Container(
                     color: Colors.grey.shade200,
@@ -244,11 +343,9 @@ class _NoteCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    note.topic,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
+                  Text(note.topic,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15)),
                   const SizedBox(height: 3),
                   Row(
                     children: [
