@@ -21,12 +21,18 @@ class _NotesManagerScreenState extends State<NotesManagerScreen> {
   List<NoteModel> _allNotes = [];
   List<String> _subjects = [];
   String? _selectedSubject;
+  String? _selectedTopic;
   bool _isLoading = true;
-
+  final _topicSearchController = TextEditingController();
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+  @override
+  void dispose() {
+    _topicSearchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -45,6 +51,7 @@ class _NotesManagerScreenState extends State<NotesManagerScreen> {
     final notes = await _db.fetchNotes(
       groupIds: groupIds,
       subject: _selectedSubject,
+      topic: _selectedTopic,
     );
     final subjects = await _db.getSubjectsForGroups(groupIds);
 
@@ -64,6 +71,13 @@ class _NotesManagerScreenState extends State<NotesManagerScreen> {
     }
     return grouped;
   }
+  void _applyFilters() {
+    final topic = _topicSearchController.text.trim().isEmpty
+        ? null
+        : _topicSearchController.text.trim();
+    setState(() => _selectedTopic = topic);
+    _loadNotes();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,31 +87,69 @@ class _NotesManagerScreenState extends State<NotesManagerScreen> {
           Container(
             color: const Color(0xFF5C6BC0),
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-            child: SizedBox(
-              height: 38,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _FilterChip(
-                    label: 'All',
-                    selected: _selectedSubject == null,
-                    onTap: () {
-                      setState(() => _selectedSubject = null);
-                      _loadNotes();
-                    },
-                  ),
-                  ..._subjects.map(
-                    (s) => _FilterChip(
-                      label: s,
-                      selected: _selectedSubject == s,
-                      onTap: () {
-                        setState(() => _selectedSubject = s);
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 38,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _FilterChip(label: 'All', selected: _selectedSubject == null, onTap: () {
+                        setState(() => _selectedSubject = null);
                         _loadNotes();
                       },
-                    ),
+                      ),
+                      ..._subjects.map(
+                        (s) => _FilterChip(label: s,
+                         selected: _selectedSubject == s, onTap: () {setState(() => _selectedSubject = s);
+                         _loadNotes();
+                         },
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: TextField(
+                      controller: _topicSearchController,
+                      onSubmitted: (_) => _applyFilters(),
+                      decoration: InputDecoration(
+                        hintText: 'Search by topic...',
+                        hintStyle: const TextStyle(color: Colors.white60),
+                        prefixIcon: const Icon(Icons.search, color: Colors.white60),
+                        filled: true,
+                        fillColor: Colors.white24,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                     ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(onPressed: _applyFilters, icon: const Icon(Icons.filter_list, color: Colors.white),
+                    tooltip: 'Apply filter',
+                    ),
+                    if (_selectedSubject != null || _selectedTopic != null)
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedSubject = null;
+                          _selectedTopic = null;
+                          _topicSearchController.clear();
+                        });
+                        _loadNotes();
+                      },
+                      icon: const Icon(Icons.clear, color: Colors.white70),
+                      tooltip: 'Clear filters',
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
 
