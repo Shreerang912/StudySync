@@ -89,7 +89,7 @@ class _GroupTile extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: CircleAvatar(
         radius: 26,
-        backgroundColor: const Color(0xFF5C6BC0),
+        backgroundColor: const Color.fromARGB(253, 59, 118, 228),
         child: Text(
           group.name[0].toUpperCase(),
           style: const TextStyle(

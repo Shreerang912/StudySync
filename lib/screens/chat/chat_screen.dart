@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -180,7 +181,7 @@ class _ChatScreenState extends State<ChatScreen> {
             message: 'Request Notes',
             child: IconButton(
               icon: const Icon(Icons.request_page_outlined,
-                  color: Color(0xFF5C6BC0)),
+                  color: Color.fromARGB(253, 59, 118, 228)),
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -199,7 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
             message: 'Send Notes',
             child: IconButton(
               icon: const Icon(Icons.upload_file_outlined,
-                  color: Color(0xFF5C6BC0)),
+                  color: Color.fromARGB(253, 59, 118, 228)),
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -214,23 +215,33 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
 
           // Text input
+          // Text input
           Expanded(
-            child: TextField(
-              controller: _msgController,
-              maxLines: null,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                hintText: 'Message...',
-                filled: true,
-                fillColor: Colors.grey.shade100,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+            child: KeyboardListener(
+              focusNode: FocusNode(),
+              onKeyEvent: (event) {
+                if (event is KeyDownEvent &&
+                    event.logicalKey == LogicalKeyboardKey.enter &&
+                    !HardwareKeyboard.instance.isShiftPressed) {
+                  _sendText();
+                }
+              },
+              child: TextField(
+                controller: _msgController,
+                maxLines: null,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  hintText: 'Message...',
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-              onSubmitted: (_) => _sendText(),
             ),
           ),
 
@@ -331,7 +342,7 @@ class _MessageBubble extends StatelessWidget {
                 style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF5C6BC0)),
+                    color: Color.fromARGB(253, 59, 118, 228)),
               ),
             Text(
               message.text ?? '',
@@ -466,7 +477,7 @@ class _NoteBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFE8EAF6),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF5C6BC0), width: 1.5),
+          border: Border.all(color: const Color.fromARGB(253, 59, 118, 228), width: 1.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,7 +583,7 @@ class _UploadingNoteBubbleState extends State<_UploadingNoteBubble>
             decoration: BoxDecoration(
               color: const Color(0xFFE8EAF6),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF5C6BC0), width: 1.5),
+              border: Border.all(color: const Color.fromARGB(253, 59, 118, 228), width: 1.5),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,7 +622,7 @@ class _UploadingNoteBubbleState extends State<_UploadingNoteBubble>
                     SizedBox(width: 12, height: 12,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Color(0xFF5C6BC0),
+                              color: Color.fromARGB(253, 59, 118, 228),
                             ),
                           ),
                           SizedBox(width: 6),

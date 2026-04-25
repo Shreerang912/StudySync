@@ -89,7 +89,7 @@ class _FriendsScreenState extends State<FriendsScreen>
         children: [
           // Tab bar
           Container(
-            color: const Color(0xFF5C6BC0),
+            color: const Color.fromARGB(253, 59, 118, 228),
             child: TabBar(
               controller: _tabController,
               indicatorColor: Colors.white,
@@ -124,7 +124,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                         decoration: InputDecoration(
                           hintText: 'Search by username...',
                           prefixIcon: const Icon(Icons.search,
-                              color: Color(0xFF5C6BC0)),
+                              color: Color.fromARGB(253, 59, 118, 228)),
                           suffixIcon: _isSearching
                               ? const Padding(
                                   padding: EdgeInsets.all(12),
@@ -153,7 +153,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                           final user = _searchResults[i];
                           return ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: const Color(0xFF5C6BC0),
+                              backgroundColor: const Color.fromARGB(253, 59, 118, 228),
                               child: Text(
                                 user.username[0].toUpperCase(),
                                 style:
@@ -225,7 +225,7 @@ class _FriendsList extends StatelessWidget {
             final f = friends[i];
             return ListTile(
               leading: CircleAvatar(
-                backgroundColor: const Color(0xFF5C6BC0),
+                backgroundColor: const Color.fromARGB(253, 59, 118, 228),
                 child: Text(f.username[0].toUpperCase(),
                     style: const TextStyle(color: Colors.white)),
               ),
@@ -282,7 +282,7 @@ class _RequestsList extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: const Color(0xFF5C6BC0),
+                    backgroundColor: const Color.fromARGB(253, 59, 118, 228),
                     child: Text(req.fromUsername[0].toUpperCase(),
                         style: const TextStyle(color: Colors.white)),
                   ),

@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF3F51B5), Color(0xFF7986CB)],
+            colors: [Color.fromARGB(253, 59, 118, 228), Color.fromARGB(253, 59, 118, 228)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Icon(
                       Icons.menu_book_rounded,
                       size: 50,
-                      color: Color(0xFF3F51B5),
+                      color: Color.fromARGB(253, 59, 118, 228),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF3F51B5),
+                            color: Color.fromARGB(253, 59, 118, 228),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -171,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ElevatedButton(
                           onPressed: _isLoading ? null : _login,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF3F51B5),
+                            backgroundColor: const Color.fromARGB(253, 59, 118, 228),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -222,11 +222,11 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: const Color(0xFF5C6BC0)),
+      prefixIcon: Icon(icon, color: const Color.fromARGB(253, 59, 118, 228)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF3F51B5), width: 2),
+        borderSide: const BorderSide(color: Color.fromARGB(253, 59, 118, 228), width: 2),
       ),
     );
   }

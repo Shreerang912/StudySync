@@ -7,6 +7,7 @@ import 'services/auth_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
 
+final themeNotifier = ValueNotifier(ThemeMode.light);
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
    HttpOverrides.global = MyHttpOverrides();
@@ -34,21 +35,40 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => AuthService(),
-      child: MaterialApp(
-        title: 'StudySync',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF5C6BC0),
+      child: ValueListenableBuilder(
+        valueListenable: themeNotifier,
+        builder: (_, mode, __) => MaterialApp(
+          title: 'StudySync',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(253, 59, 118, 228)),
+            useMaterial3: true,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color.fromARGB(253, 59, 118, 228),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
           ),
-          useMaterial3: true,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF5C6BC0),
-            foregroundColor: Colors.white,
-            elevation: 0,
+          darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color.fromARGB(253, 59, 118, 228),
+              brightness: Brightness.dark,
+            ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color.fromARGB(253, 59, 118, 228),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            inputDecorationTheme: const InputDecorationTheme(
+              border: OutlineInputBorder(),
+            ),
+            navigationBarTheme: NavigationBarThemeData(
+              backgroundColor: const Color(0xFF1E1E2E),
+            ),
           ),
+          themeMode: mode,
+          home: const AuthWrapper(),
         ),
-        home: const AuthWrapper(),
       ),
     );
   }
@@ -65,7 +85,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(color: Color(0xFF5C6BC0)),
+              child: CircularProgressIndicator(color: Color.fromARGB(253, 59, 118, 228)),
             ),
           );
         }

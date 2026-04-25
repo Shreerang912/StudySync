@@ -97,11 +97,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5C6BC0).withOpacity(0.15),
+                  color: const Color.fromARGB(253, 59, 118, 228).withOpacity(0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.group,
-                    size: 40, color: Color(0xFF5C6BC0)),
+                    size: 40, color: Color.fromARGB(253, 59, 118, 228)),
               ),
             ),
             const SizedBox(height: 24),
@@ -112,7 +112,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 labelText: 'Group Name',
                 hintText: 'e.g. Physics Study Group',
                 prefixIcon:
-                    const Icon(Icons.group, color: Color(0xFF5C6BC0)),
+                    const Icon(Icons.group, color: Color.fromARGB(253, 59, 118, 228)),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
@@ -129,7 +129,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               decoration: InputDecoration(
                 labelText: 'Description (optional)',
                 prefixIcon:
-                    const Icon(Icons.description, color: Color(0xFF5C6BC0)),
+                    const Icon(Icons.description, color: Color.fromARGB(253, 59, 118, 228)),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
@@ -153,7 +153,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5C6BC0),
+                    color: const Color.fromARGB(253, 59, 118, 228),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -202,7 +202,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     title: Text(friend.username),
                     subtitle: Text(friend.email),
                     secondary: CircleAvatar(
-                      backgroundColor: const Color(0xFF5C6BC0),
+                      backgroundColor: const Color.fromARGB(253, 59, 118, 228),
                       child: Text(
                         friend.username[0].toUpperCase(),
                         style: const TextStyle(color: Colors.white),

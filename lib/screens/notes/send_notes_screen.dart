@@ -1,5 +1,5 @@
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/group_model.dart';
@@ -9,7 +9,7 @@ import '../../services/firestore_service.dart';
 
 Future<void> _backgroundUpload({
   required String placeholderMsgId,
-  required List<File> images,
+  required List<XFile> images,
   required String currentUid,
   required String senderName,
   required String groupId,
@@ -75,7 +75,7 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
   final _picker = ImagePicker();
   final _db = FirestoreService();
 
-  List<File> _selectedImages = [];
+  List<XFile> _selectedImages = [];
   bool _isSending = false;
   String _uploadStatus = '';
 
@@ -100,19 +100,13 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
 
   Future<void> _pickFromGallery() async {
     final picked = await _picker.pickMultiImage(imageQuality: 80);
-    if (picked.isNotEmpty) {
-      setState(() {
-        _selectedImages.addAll(picked.map((x) => File(x.path)));
-      });
-    }
+    if (picked.isNotEmpty) setState(() => _selectedImages.addAll(picked));
   }
 
   Future<void> _pickFromCamera() async {
     final picked = await _picker.pickImage(
         source: ImageSource.camera, imageQuality: 80);
-    if (picked != null) {
-      setState(() => _selectedImages.add(File(picked.path)));
-    }
+    if (picked != null) setState(() => _selectedImages.add(picked));
   }
 
   void _removeImage(int index) {
@@ -147,7 +141,7 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
     final description = _descController.text.trim().isEmpty
         ? null
         : _descController.text.trim();
-    final imagesToUpload = List<File>.from(_selectedImages);
+    final imagesToUpload = List<XFile>.from(_selectedImages);
     final db = FirestoreService();
 
     final placeholderMsgId = await db.sendMessage(
@@ -373,12 +367,15 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
                                         child: Stack(
                                           children: [
                                             InteractiveViewer(
-                                              child: Image.file(
-                                                _selectedImages[index],
-                                                fit: BoxFit.contain,
-                                                width: double.infinity,
-                                                height: double.infinity,
-                                              ),
+                                              child: FutureBuilder<List<int>>(
+                                              future: _selectedImages[index].readAsBytes(),
+                                              builder: (_, snap) => snap.hasData
+                                                  ? Image.memory(Uint8List.fromList(snap.data!),
+                                                      fit: BoxFit.contain,
+                                                      width: double.infinity,
+                                                      height: double.infinity)
+                                                  : const CircularProgressIndicator(),
+                                            )
                                             ),
                                             Positioned(
                                               top: 8,
@@ -396,12 +393,12 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
                                       ),
                                     );
                                   },
-                                  child: Image.file(
-                                    _selectedImages[index],
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                    cacheWidth: 160,
+                                  child: FutureBuilder<List<int>>(
+                                    future: _selectedImages[index].readAsBytes(),
+                                    builder: (_, snap) => snap.hasData
+                                    ? Image.memory(Uint8List.fromList(snap.data!),
+                                    width: 80, height: 80, fit: BoxFit.cover)
+                                    : const SizedBox(width: 80, height: 80),
                                   ),
                                 ),
 
@@ -464,7 +461,7 @@ class _SendNotesScreenState extends State<SendNotesScreen> {
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      prefixIcon: Icon(icon, color: const Color(0xFF5C6BC0)),
+      prefixIcon: Icon(icon, color: const Color.fromARGB(253, 59, 118, 228)),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

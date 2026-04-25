@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../groups/groups_screen.dart';
 import '../notes/notes_manager_screen.dart';
 import '../friends/friends_screen.dart';
+import '../../main.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,7 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+        
         actions: [
+          
           IconButton(
             icon: const CircleAvatar(
               backgroundColor: Colors.white24,
@@ -94,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             CircleAvatar(
               radius: 35,
-              backgroundColor: const Color(0xFF5C6BC0),
+              backgroundColor: const Color.fromARGB(253, 59, 118, 228),
               child: Text(
                 (auth.currentUserModel?.username ?? 'U')[0].toUpperCase(),
                 style: const TextStyle(

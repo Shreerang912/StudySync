@@ -137,7 +137,7 @@ class _RequestNotesScreenState extends State<RequestNotesScreen> {
               decoration: InputDecoration(
                 hintText: 'e.g. Physics',
                 prefixIcon: const Icon(Icons.book_outlined,
-                    color: Color(0xFF5C6BC0)),
+                    color: Color.fromARGB(253, 59, 118, 228)),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
@@ -174,7 +174,7 @@ class _RequestNotesScreenState extends State<RequestNotesScreen> {
               decoration: InputDecoration(
                 hintText: 'e.g. Newton\'s Laws of Motion',
                 prefixIcon: const Icon(Icons.topic_outlined,
-                    color: Color(0xFF5C6BC0)),
+                    color: Color.fromARGB(253, 59, 118, 228)),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(

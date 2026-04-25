@@ -85,7 +85,7 @@ class _NotesManagerScreenState extends State<NotesManagerScreen> {
       body: Column(
         children: [
           Container(
-            color: const Color(0xFF5C6BC0),
+            color: const Color.fromARGB(253, 59, 118, 228),
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
             child: Column(
               children: [
@@ -355,7 +355,7 @@ class _NoteCard extends StatelessWidget {
             ),
           ],
           border: const Border(
-            left: BorderSide(color: Color(0xFF5C6BC0), width: 4),
+            left: BorderSide(color: Color.fromARGB(253, 59, 118, 228), width: 4),
           ),
         ),
         child: Row(
@@ -402,11 +402,11 @@ class _NoteCard extends StatelessWidget {
                   Row(
                     children: [
                       const Icon(Icons.book_outlined,
-                          size: 13, color: Color(0xFF5C6BC0)),
+                          size: 13, color: Color.fromARGB(253, 59, 118, 228)),
                       const SizedBox(width: 4),
                       Text(note.subject,
                           style: const TextStyle(
-                              color: Color(0xFF5C6BC0), fontSize: 12)),
+                              color: Color.fromARGB(253, 59, 118, 228), fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 3),
