@@ -1,0 +1,8 @@
+image: Visual Studio 2022
+stack: flutter 3
+build_script:
+  - flutter pub get
+  - flutter build windows
+artifacts:
+  - path: build\windows\x64\runner\Release\
+    name: WindowsApp
