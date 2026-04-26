@@ -1,8 +1,11 @@
 image: Visual Studio 2022
-stack: flutter 3
+stack: flutter 3 # This ensures the pre-installed Flutter is used
+install:
+  - flutter upgrade
 build_script:
   - flutter pub get
-  - flutter build windows
+  - flutter build windows --release
 artifacts:
-  - path: build\windows\x64\runner\Release\
-    name: WindowsApp
+  - path: build\windows\x64\runner\Release
+    name: StudySync-Windows
+    type: zip # This bundles everything into one downloadable zip
