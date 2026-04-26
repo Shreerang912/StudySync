@@ -7,6 +7,7 @@ environment:
   sdk: ^3.11.1
 
 dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter:
     sdk: flutter
 
@@ -28,3 +29,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/logo.png"
