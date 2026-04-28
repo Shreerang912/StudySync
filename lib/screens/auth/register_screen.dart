@@ -39,7 +39,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     if (_passwordController.text.length < 6) {
-      setState(() => _errorMessage = 'Password must be at least 6 characters');
+      setState(
+        () => _errorMessage = 'Password must be at least 6 characters',
+      );
       return;
     }
 
@@ -54,12 +56,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
           username: _usernameController.text,
         );
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (error != null) {
-        setState(() => _errorMessage = error);
-      }
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (error != null) {
+      setState(() => _errorMessage = error);
+      return;
     }
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
@@ -68,7 +74,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color.fromARGB(253, 59, 118, 228), Color.fromARGB(253, 59, 118, 228)],
+            colors: [
+              Color.fromARGB(253, 59, 118, 228),
+              Color.fromARGB(253, 59, 118, 228),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -100,7 +109,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextStyle(color: Colors.white70),
                   ),
                   const SizedBox(height: 30),
-
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -117,20 +125,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             decoration: BoxDecoration(
                               color: Colors.red.shade50,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red.shade200),
+                              border: Border.all(
+                                color: Colors.red.shade200,
+                              ),
                             ),
                             child: Text(
                               _errorMessage!,
                               style: TextStyle(color: Colors.red.shade700),
                             ),
                           ),
-
-                        _buildField(_usernameController, 'Username',
-                            Icons.person_outline),
+                        _buildField(
+                          _usernameController,
+                          'Username',
+                          Icons.person_outline,
+                        ),
                         const SizedBox(height: 14),
-                        _buildField(_emailController, 'Email',
-                            Icons.email_outlined,
-                            type: TextInputType.emailAddress),
+                        _buildField(
+                          _emailController,
+                          'Email',
+                          Icons.email_outlined,
+                          type: TextInputType.emailAddress,
+                        ),
                         const SizedBox(height: 14),
                         TextField(
                           controller: _passwordController,
@@ -140,11 +155,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Icons.lock_outline,
                           ).copyWith(
                             suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined),
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
                               onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword),
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
                             ),
                           ),
                         ),
@@ -152,16 +170,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         TextField(
                           controller: _confirmPasswordController,
                           obscureText: true,
-                          decoration:
-                              _inputDecoration('Confirm Password', Icons.lock_outline),
+                          decoration: _inputDecoration(
+                            'Confirm Password',
+                            Icons.lock_outline,
+                          ),
                           onSubmitted: (_) => _register(),
                         ),
                         const SizedBox(height: 24),
-
                         ElevatedButton(
                           onPressed: _isLoading ? null : _register,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(253, 59, 118, 228),
+                            backgroundColor:
+                                const Color.fromARGB(253, 59, 118, 228),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -180,14 +200,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               : const Text(
                                   'Create Account',
                                   style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                         ),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -221,11 +241,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: const Color.fromARGB(253, 59, 118, 228)),
+      prefixIcon: Icon(
+        icon,
+        color: const Color.fromARGB(253, 59, 118, 228),
+      ),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color.fromARGB(253, 59, 118, 228), width: 2),
+        borderSide: const BorderSide(
+          color: Color.fromARGB(253, 59, 118, 228),
+          width: 2,
+        ),
       ),
     );
   }
